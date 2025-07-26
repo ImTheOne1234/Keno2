@@ -1,103 +1,483 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- Basic boilerplate nothing interesting going on here -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
-        <title> Prism </title> 
-        <!-- End basic boilerplate -->
+        <title>Keno</title>
+        <link id="favicon" rel="icon" href="faviconkenobgremoved.ico" type="image/x-icon">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;700&display=swap" rel="stylesheet">
         <style>
-            /** Basic CSS boilerplate **/
+            /* Basic CSS boilerplate */
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
+    
+            html, body {
+                height: 100%; /* Ensure html and body take full height */
+            }
+    
             body {
                 width: 100%;
-                height: 100vh;
+                min-height: 100vh;
+                font-family: 'Poppins', sans-serif;
+                background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 2rem;
+                position: relative; /* Needed for iframe absolute positioning relative to body */
+                /* REMOVE: overflow: hidden; from here */
             }
-            /** End basic CSS boilerplate **/
-
-            /** add the "dnone" class (display none) **/
+    
+            /* New class for body when iframe is active */
+            body.iframe-active {
+                overflow: hidden; /* Only hide overflow when iframe is active */
+            }
+    
+            /* add the "dnone" class (display none) */
             .dnone {
-                display: none;
+                display: none !important;
                 visibility: hidden;
                 width: 0%;
                 height: 0%;
+                overflow: hidden;
             }
-
-            /** Style the "main" div **/
+    
+            /* Style the "main" div */
             #main {
                 width: 100%;
-                height: 100%;
-                background: black;
+                max-width: 600px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 1.5rem;
+                padding: 3rem;
                 display: flex;
                 flex-direction: column;
-                gap: 2rem; 
-                justify-content: center;
+                gap: 1.5rem;
                 align-items: center;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                position: relative;
+                z-index: 10;
             }
-
-            /** Style the title **/
+    
+            /* Style the logo image */
+            #logo {
+                width: 120px;
+                height: 120px;
+                margin-bottom: 1rem;
+            }
+    
+            /* Style the title */
             #title {
-                color: white;
-                font-weight: 900;
-                font-size: 4rem;
+                color: #e0e0e0;
+                font-weight: 700;
+                font-size: 3.5rem;
+                text-align: center;
+                letter-spacing: 2px;
+                text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
             }
-
-            /** Style the description **/
+    
+            /* Style the description */
             #description {
-                color: white;
-                font-weight: 200;
-                opacity: 0.75;
+                color: #b0b0b0;
+                font-weight: 400;
+                font-size: 1.1rem;
+                text-align: center;
+                line-height: 1.6;
             }
-
-            /** Style the input (address bar) **/
+    
+            /* Style the input (address bar) */
             #address {
-                width: 30rem;
-                height: 4rem;
-                background: #33001a;
-                color: white;
+                width: 100%;
+                height: 3.5rem;
+                background: rgba(255, 255, 255, 0.1);
+                color: #f0f0f0;
                 outline: none;
-                border: none;
-                padding: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 0 1rem;
                 font-size: 1rem;
-                font-weight: 900;
-                border-radius: 1rem;
+                font-weight: 400;
+                border-radius: 0.75rem;
+                transition: all 0.3s ease;
             }
-
+    
+            #address::placeholder {
+                color: #c0c0c0;
+                opacity: 0.7;
+            }
+    
+            #address:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+                background: rgba(255, 255, 255, 0.15);
+            }
+    
             /** Style the iframe **/
             #frame {
                 width: 100%;
                 height: 100%;
-                /** Set position to absolute. This allows us to open the iframe ON TOP of everything **/
-                position: absolute;
+                position: fixed;
                 top: 0;
-                bottom: 0;
+                left: 0;
                 background: black;
                 outline: none;
                 border: none;
+                z-index: 999;
+            }
+    
+            /* Styles for the new elements */
+            .controls {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+                align-items: center;
+            }
+    
+            .preset-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                justify-content: center;
+            }
+    
+            .action-button, .preset-button, #applyCustom {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 0.8rem 1.5rem;
+                border-radius: 0.75rem;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+            }
+    
+            .action-button:hover, .preset-button:hover, #applyCustom:hover {
+                background-color: #0056b3;
+                transform: translateY(-2px);
+            }
+    
+            .action-button:active, .preset-button:active, #applyCustom:active {
+                transform: translateY(0);
+            }
+    
+            .custom-input-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+                align-items: center;
+            }
+    
+            .custom-input-group input {
+                width: 100%;
+            }
+    
+            #backButton {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                background-color: rgba(0, 0, 0, 0.7);
+                color: white;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                cursor: pointer;
+                z-index: 9999;
+                display: none;
+                font-size: 1rem;
+                transition: background-color 0.3s ease;
+            }
+    
+            #backButton:hover {
+                background-color: rgba(0, 0, 0, 0.9);
+            }
+    
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                #main {
+                    padding: 2rem;
+                    gap: 1rem;
+                }
+                #logo {
+                    width: 100px;
+                    height: 100px;
+                }
+                #title {
+                    font-size: 2.8rem;
+                }
+                #description {
+                    font-size: 1rem;
+                }
+                #address {
+                    height: 3rem;
+                    font-size: 0.9rem;
+                }
+                .action-button, .preset-button, #applyCustom {
+                    padding: 0.7rem 1.2rem;
+                    font-size: 0.9rem;
+                }
+                #backButton {
+                    top: 0.5rem;
+                    left: 0.5rem;
+                    padding: 0.4rem 0.8rem;
+                    font-size: 0.9rem;
+                }
+            }
+    
+            @media (max-width: 480px) {
+                #main {
+                    padding: 1.5rem;
+                }
+                #logo {
+                    width: 80px;
+                    height: 80px;
+                }
+                #title {
+                    font-size: 2.2rem;
+                }
+                #description {
+                    font-size: 0.9rem;
+                }
+                .preset-buttons {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .action-button, .preset-button, #applyCustom {
+                    width: 100%;
+                }
             }
         </style>
-        <!-- The UV bundle. It contains most of the code for ultraviolet to function properly -->
         <script src="uv/uv.bundle.js" defer></script>
-        <!-- The uv.config.js file we just made. -->
         <script src="uv/uv.config.js" defer></script>
-        <!-- BareMux content -->
         <script src="baremux/index.js" defer></script>
     </head>
     <body>
         <div id="main">
-            <!-- Title -->
-            <h1 id="title"> Prism </h1>
-            <!-- Description --> 
-            <p id="description"> A barebones example from MotorTruck1221's guide "Creating a proxy frontend from scratch" </p>
-            <!-- Search bar -->
-            <input id="address" type="text" placeholder="Search..." />
-            <!-- iframe where the content will be loaded -->
-            <iframe id="frame" class="dnone"></iframe>
+            <img id="logo" src="kenologobgremoved.png" alt="Keno Logo">
+            <h1 id="title">Keno</h1>
+            <p id="description">Explore the web without restrictions.</p>
+            <input id="address" type="text" placeholder="Enter URL..." />
+    
+            <button id="mainActionButton" class="action-button">Change Tab Info</button>
+    
+            <div class="controls dnone" id="tabChangerControls">
+                <div class="preset-buttons">
+                    <button class="preset-button" data-preset="Classroom">Classroom</button>
+                    <button class="preset-button" data-preset="Google">Google</button>
+                    <button class="preset-button" data-preset="Teams">Teams</button>
+                    <button class="preset-button" data-preset="Gmail">Gmail</button>
+                    <button class="preset-button" data-preset="Drive">Drive</button>
+                    <button class="preset-button" data-preset="KenoOriginal">Keno</button>
+                </div>
+    
+                <div class="custom-input-group">
+                    <input type="text" id="customTitleInput" placeholder="Enter custom title">
+                    <input type="text" id="customFaviconInput" placeholder="Enter favicon URL (optional)">
+                    <button id="applyCustom">Apply Custom</button>
+                </div>
+            </div>
         </div>
+    
+        <iframe id="frame" class="dnone"></iframe>
+        <button id="backButton" class="dnone">← Back</button>
+    
+        <script>
+            let faviconLink;
+            let uvInstance;
+    
+            const mainElement = document.getElementById('main');
+            const addressInput = document.getElementById('address');
+            const iframe = document.getElementById('frame');
+            const backButton = document.getElementById('backButton');
+            const bodyElement = document.body; // Reference to the body element
+    
+            const mainActionButton = document.getElementById('mainActionButton');
+            const tabChangerControls = document.getElementById('tabChangerControls');
+            const customTitleInput = document.getElementById('customTitleInput');
+            const customFaviconInput = document.getElementById('customFaviconInput');
+            const applyCustomButton = document.getElementById('applyCustom');
+            const presetButtons = document.querySelectorAll('.preset-button');
+    
+            const presets = {
+                Classroom: {
+                    title: 'Google Classroom',
+                    favicon: 'https://ssl.gstatic.com/classroom/favicon.png'
+                },
+                Google: {
+                    title: 'Google',
+                    favicon: 'https://www.google.com/favicon.ico'
+                },
+                Teams: {
+                    title: 'Microsoft Teams',
+                    favicon: 'https://teams.microsoft.com/favicon.ico'
+                },
+                Gmail: {
+                    title: 'Gmail',
+                    favicon: 'https://ssl.gstatic.com/ui/v1/icons/mail/images/favicon_a.ico'
+                },
+                Drive: {
+                    title: 'Google Drive',
+                    favicon: 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_icon16.png'
+                },
+                KenoOriginal: {
+                    title: 'Keno',
+                    favicon: 'faviconkenobgremoved.ico'
+                }
+            };
+    
+            function setTabInfo(title, faviconUrl) {
+                console.log("Attempting to set tab info:");
+                console.log("Title:", title);
+                console.log("Favicon URL:", faviconUrl);
+                console.log("Current faviconLink element:", faviconLink);
+    
+                document.title = title;
+    
+                if (faviconLink) {
+                    if (faviconUrl) {
+                        faviconLink.href = faviconUrl;
+                        console.log("Favicon set to:", faviconUrl);
+                    } else {
+                        faviconLink.href = 'faviconkenobgremoved.ico';
+                        console.log("Favicon set to fallback:", 'faviconkenobgremoved.ico');
+                    }
+                } else {
+                    console.error("Favicon link element (ID 'favicon') not found for setTabInfo!");
+                }
+            }
+    
+            function showIframe() {
+                mainElement.classList.add('dnone'); // Hide the main container
+                iframe.classList.remove('dnone'); // Show the iframe
+                backButton.classList.remove('dnone'); // Show the back button
+                bodyElement.classList.add('iframe-active'); // Add class to body to hide scrollbars
+                console.log("Iframe shown, main hidden, body overflow hidden.");
+            }
+    
+            function hideIframe() {
+                iframe.classList.add('dnone'); // Hide the iframe
+                backButton.classList.add('dnone'); // Hide the back button
+                mainElement.classList.remove('dnone'); // Show the main container
+                addressInput.value = '';
+                iframe.src = 'about:blank'; // Clear iframe content
+                bodyElement.classList.remove('iframe-active'); // Remove class from body to allow scrollbars
+                console.log("Iframe hidden, main shown, body overflow auto.");
+            }
+    
+            addressInput.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    loadProxiedURL();
+                }
+            });
+    
+            function loadProxiedURL() {
+                const url = addressInput.value.trim();
+                if (!uvInstance) {
+                    alert('Proxy not initialized. Please refresh the page or check console for errors.');
+                    console.error("Ultraviolet instance (uvInstance) is not available.");
+                    return;
+                }
+    
+                if (url) {
+                    let proxiedUrl;
+                    try {
+                        proxiedUrl = uvInstance.encode(url);
+                    } catch (e) {
+                        console.error("Error during UV encoding:", e);
+                        const normalizedUrl = !url.startsWith('http://') && !url.startsWith('https://') ? 'http://' + url : url;
+                        try {
+                            proxiedUrl = uvInstance.encode(normalizedUrl);
+                        } catch (e2) {
+                            console.error("Error during UV encoding with normalized URL:", e2);
+                            alert('Could not encode URL. Please check the format.');
+                            return;
+                        }
+                    }
+    
+                    if (proxiedUrl) {
+                        iframe.src = proxiedUrl;
+                        showIframe();
+                        console.log("Attempting to load URL:", url, "Proxied URL:", proxiedUrl);
+                    } else {
+                        alert('Invalid URL or search query.');
+                        console.warn("Invalid URL or search query entered.");
+                    }
+                } else {
+                    alert('Please enter a URL or search query.');
+                    console.warn("No URL entered.");
+                }
+            }
+    
+            backButton.addEventListener('click', hideIframe);
+    
+            mainActionButton.addEventListener('click', () => {
+                tabChangerControls.classList.toggle('dnone');
+                if (tabChangerControls.classList.contains('dnone')) {
+                    mainActionButton.textContent = 'Change Tab Info';
+                    console.log("Tab changer controls hidden.");
+                } else {
+                    mainActionButton.textContent = 'Hide Options';
+                    console.log("Tab changer controls shown.");
+                }
+            });
+    
+            presetButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const presetName = button.dataset.preset;
+                    const preset = presets[presetName];
+                    if (preset) {
+                        setTabInfo(preset.title, preset.favicon);
+                        tabChangerControls.classList.add('dnone');
+                        mainActionButton.textContent = 'Change Tab Info';
+                        console.log("Preset applied:", presetName);
+                    }
+                });
+            });
+    
+            applyCustomButton.addEventListener('click', () => {
+                const customTitle = customTitleInput.value.trim();
+                const customFavicon = customFaviconInput.value.trim();
+    
+                if (customTitle) {
+                    setTabInfo(customTitle, customFavicon);
+                    tabChangerControls.classList.add('dnone');
+                    mainActionButton.textContent = 'Change Tab Info';
+                    customTitleInput.value = '';
+                    customFaviconInput.value = '';
+                    console.log("Custom info applied:", customTitle);
+                } else {
+                    alert('Please enter a custom title to apply.');
+                    console.warn("Attempted to apply custom info without title.");
+                }
+            });
+    
+            document.addEventListener('DOMContentLoaded', () => {
+                faviconLink = document.getElementById('favicon');
+                if (faviconLink) {
+                    console.log("Favicon link element found and assigned:", faviconLink);
+                    setTabInfo('Keno', 'faviconkenobgremoved.ico');
+                } else {
+                    console.error("CRITICAL ERROR: Could not find favicon link element with ID 'favicon' on DOMContentLoaded!");
+                }
+    
+                if (window.UV && window.UV.Ultraviolet) {
+                    uvInstance = new window.UV.Ultraviolet({
+                        prefix: '/uv/',
+                        bare: '/baremux/',
+                    });
+                    console.log("Ultraviolet initialized successfully:", uvInstance);
+                } else {
+                    console.error("Ultraviolet (uv.bundle.js) not loaded correctly. window.UV or window.UV.Ultraviolet is undefined. Check script paths and network tab!");
+                }
+            });
+    
+        </script>
+    </body>
+    
         <script>
             async function regSW() {
                 //if the service worker doesn't exist throw an error
